@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Expense Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg:#f4f6f8;
+  --card:#ffffff;
+  --text:#222;
+  --primary:#4f46e5;
+}
+.dark{
+  --bg:#0f172a;
+  --card:#1e293b;
+  --text:#e5e7eb;
+}
+*{box-sizing:border-box;font-family:Arial}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+}
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+button{
+  padding:8px 14px;
+  border:none;
+  cursor:pointer;
+  background:var(--primary);
+  color:#fff;
+  border-radius:6px;
+}
+.card{
+  background:var(--card);
+  padding:16px;
+  border-radius:10px;
+  margin-top:20px;
+}
+form{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:10px;
+}
+input,select{
+  padding:8px;
+}
+ul{
+  list-style:none;
+  padding:0;
+}
+li{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
+.chart{
+  height:120px;
+  display:flex;
+  align-items:flex-end;
+  gap:10px;
+}
+.bar{
+  width:30px;
+  background:var(--primary);
+}
+@media(max-width:600px){
+  li{flex-direction:column;gap:5px}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+  <h2>Expense Tracker</h2>
+  <button onclick="toggleTheme()">🌙</button>
+</header>
+
+<div class="card">
+<form id="expenseForm">
+  <input type="number" id="amount" placeholder="Amount">
+  <select id="category">
+    <option value="">Category</option>
+    <option>Food</option>
+    <option>Transport</option>
+    <option>Shopping</option>
+  </select>
+  <input type="date" id="date">
+  <input type="text" id="note" placeholder="Note">
+  <button>Add</button>
+</form>
+</div>
+
+<div class="card">
+<h3>Total Expense: <span id="total">0</span></h3>
+<ul id="list"></ul>
+</div>
+
+<div class="card">
+<h3>Monthly Chart</h3>
+<div class="chart" id="chart"></div>
+</div>
+
+</div>
+
+<script>
+let expenses = JSON.parse(localStorage.getItem("expenses")) || []
+
+const form = document.getElementById("expenseForm")
+const list = document.getElementById("list")
+const totalEl = document.getElementById("total")
+const chart = document.getElementById("chart")
+
+form.addEventListener("submit", e=>{
+  e.preventDefault()
+  const amount = +amount.value
+  if(amount<=0 || !category.value){
+    alert("Invalid input")
+    return
+  }
+  expenses.push({
+    id:Date.now(),
+    amount,
+    category:category.value
+  })
+  save()
+})
+
+function save(){
+  localStorage.setItem("expenses",JSON.stringify(expenses))
+  render()
+}
+
+function render(){
+  list.innerHTML=""
+  let total=0
+  expenses.forEach(e=>{
+    total+=e.amount
+    list.innerHTML+=`
+      <li>
+        ${e.category} - ${e.amount}
+        <button onclick="del(${e.id})">❌</button>
+      </li>`
+  })
+  totalEl.innerText=total
+  drawChart()
+}
+
+function del(id){
+  expenses=expenses.filter(e=>e.id!==id)
+  save()
+}
+
+function drawChart(){
+  chart.innerHTML=""
+  expenses.slice(-7).forEach(e=>{
+    chart.innerHTML+=`<div class="bar" style="height:${e.amount}px"></div>`
+  })
+}
+
+function toggleTheme(){
+  document.body.classList.toggle("dark")
+}
+
+render()
+</script>
+</body>
+</html>
